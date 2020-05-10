@@ -1,0 +1,51 @@
+kind: pipeline
+type: docker
+name: multiarch
+
+platform:
+  os:   linux
+  arch: amd64
+
+steps:
+  - name:  alpine
+    image: alpine:latest
+    commands:
+      - apk update
+      - apk add shellcheck
+      - find linux -type f | xargs shellcheck
+
+  - name: centos
+    image: centos:latest
+    commands:
+      - yum -y install epel-release
+      - yum install ShellCheck
+      - find linux -type f | xargs shellcheck
+
+  - name: fedora
+    image: fedora:latest
+    commands:
+      - dnf install ShellCheck
+      - find linux -type f | xargs shellcheck
+
+  - name: arch
+    image: archlinux:latest
+    commands:
+      - pacman --noconfirm -S shellcheck
+      - find linux -type f | xargs shellcheck
+
+  - name:  debian
+    image: debian:latest
+    commands:
+      - apt-get update -q
+      - apt-get install -qy shellcheck
+      - find linux -type f | xargs shellcheck
+
+  - name: ubuntu
+    image: ubuntu:latest
+    commands:
+      - apt-get update -q
+      - apt-get install -qy shellcheck
+      - find linux -type f | xargs shellcheck
+
+  # sadly, there is no freebsd image
+
