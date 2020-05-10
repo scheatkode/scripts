@@ -1,10 +1,6 @@
 kind: pipeline
 type: docker
-name: multiarch
-
-platform:
-  os:   linux
-  arch: amd64
+name: alpine
 
 steps:
   - name:  alpine
@@ -14,24 +10,44 @@ steps:
       - apk add shellcheck
       - find linux -type f | xargs shellcheck
 
-  - name: centos
+---
+kind: pipeline
+type: docker
+name: centos
+
+  - name:  centos
     image: centos:latest
     commands:
       - yum -y install epel-release
       - yum install ShellCheck
       - find linux -type f | xargs shellcheck
 
-  - name: fedora
+---
+kind: pipeline
+type: docker
+name: fedora
+
+  - name:  fedora
     image: fedora:latest
     commands:
       - dnf install ShellCheck
       - find linux -type f | xargs shellcheck
 
-  - name: arch
+---
+kind: pipeline
+type: docker
+name: archlinux
+
+  - name:  arch
     image: archlinux:latest
     commands:
       - pacman --noconfirm -S shellcheck
       - find linux -type f | xargs shellcheck
+
+---
+kind: pipeline
+type: docker
+name: debian
 
   - name:  debian
     image: debian:latest
@@ -40,7 +56,12 @@ steps:
       - apt-get install -qy shellcheck
       - find linux -type f | xargs shellcheck
 
-  - name: ubuntu
+---
+kind: pipeline
+type: docker
+name: ubuntu
+
+  - name:  ubuntu
     image: ubuntu:latest
     commands:
       - apt-get update -q
