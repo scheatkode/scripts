@@ -3,6 +3,20 @@
 # shellcheck disable=2016
 # shellcheck disable=2002
 
+#   Generate a self decrypting file.
+#
+#   For when you  don't want to write  long ass commands just  to copy a
+#   sensitive file over some (probably)  insecure network or store it on
+#   the cloud.
+#   This generates a runnable shell script used to restore your file.
+#
+#   Dependencies :
+#       - gpg
+#       - base64
+#
+#   Usage :
+#       selfdecrypt-gen.sh <input-file> > <output-file>
+
 if  ! command -v gpg    > /dev/null 2>&1 || \
     ! command -v base64 > /dev/null 2>&1    \
 ; then
@@ -34,7 +48,7 @@ if  ! command -v gpg    > /dev/null 2>&1 || \
     exit 1
 fi
 
-if [ x\"\${GPG_TTY}" = x\"\" ] ; then
+if [ x\"\${GPG_TTY}\" = x\"\" ] ; then
     GPG_TTY=\"\`tty\`\"
 fi
 
