@@ -28,6 +28,10 @@ do {
         '(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))?$'
 )
 
+if ($ExternalAddress -eq '') {
+    $ExternalAddress = '0.0.0.0'
+}
+
 do {
     $InternalAddress = Read-Host -Prompt 'Internal address'
 } while (
@@ -83,7 +87,7 @@ try {
 
 # Bind port
 
-Add-NetNatStatic                          `
+Add-NetNatStaticMapping                   `
     -NatName           "$NetNat"          `
     -Protocol          "$Protocol"        `
     -ExternalIPAddress "$ExternalAddress" `
@@ -94,7 +98,7 @@ Add-NetNatStatic                          `
 # Check success
 
 try {
-    Get-NetNatStaticMapping -NatName "$NetNat"
+    Get-NetNatStaticMapping -NatName "$NetNat" | Out-Null
 } catch {
     Write-Host -ForegroundColor Red 'Something went wrong during port binding'
     exit 1
