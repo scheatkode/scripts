@@ -44,10 +44,14 @@ if [ "x${volumename}" = 'x' ] ; then
     volumename="`${runtime} volume create`"
 fi
 
+
 log 'Pulling required container image'
+
 ${runtime} pull "${IMAGENAME}"
 
+
 log 'Generating configuration'
+
 ${runtime} run --rm -it             \
     -v "${volumename}:/etc/openvpn" \
     --net=none                      \
@@ -57,21 +61,27 @@ ${runtime} run --rm -it             \
     -a 'SHA384'                     \
     -b -d -D -N -z
 
+
 log 'Generating certificates'
+
 ${runtime} run --rm -it             \
     -e EASYRSA_KEY_SIZE=4096        \
     -v "${volumename}:/etc/openvpn" \
     --net=none                      \
     "${IMAGENAME}" ovpn_initpki
 
+
 log 'Generating client certificates'
+
 ${runtime} run --rm -it             \
     -e EASYRSA_KEY_SIZE=4096        \
     -v "${volumename}:/etc/openvpn" \
     --net=none                      \
     "${IMAGENAME}" easyrsa build-client-full "${clientname}"
 
+
 log 'Retrieving client certificates'
+
 ${runtime} run --rm -it             \
     -e EASYRSA_KEY_SIZE=4096        \
     -v "${volumename}:/etc/openvpn" \
@@ -79,7 +89,9 @@ ${runtime} run --rm -it             \
     --log-driver=none               \
     "${IMAGENAME}" ovpn_getclient "${clientname}" > "${clientname}.ovpn"
 
+
 log 'Launching server'
+
 ${runtime} run --rm -d              \
     -p 1194:1194/udp                \
     -v "${volumename}:/etc/openvpn" \
