@@ -1,8 +1,8 @@
 <div align='center'>
-    <img alt='Paragraph alignement icon' src='par.png' width='128'>
+    <img alt='Paragraph formatting icon' src='par.png' width='128'>
 </div>
 
-<div align='center'><h1>Paragraph alignement</h1></div>
+<div align='center'><h1>Paragraph formatter</h1></div>
 <div align='center'><code>par</code> in a jar</div>
 <br>
 <br>
