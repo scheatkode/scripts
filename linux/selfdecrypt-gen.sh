@@ -65,8 +65,8 @@ content="`cat << END
 # shellcheck disable=2006
 # shellcheck disable=2016
 
-if  ! command -v gpg    > /dev/null 2>&1 || \
-    ! command -v base64 > /dev/null 2>&1    \
+if  ! command -v gpg    > /dev/null 2>&1 || \\\\
+    ! command -v base64 > /dev/null 2>&1    \\\\
 ; then
     echo 'You need the gpg and base64 binaries for this script to work.' >&2
     exit 1
