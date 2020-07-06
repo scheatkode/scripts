@@ -16,11 +16,12 @@
 #
 #   Usage :
 #       selfdecrypt-gen.sh <input-file> > <output-file>
+#       cat <input-file> | selfdecrypt-gen.sh > <output-file>
 
 if  ! command -v gpg    > /dev/null 2>&1 || \
     ! command -v base64 > /dev/null 2>&1    \
 ; then
-    echo 'You need the `gpg` and `base64` binaries for this script to work.' >&2
+    echo 'You need the gpg and base64 binaries for this script to work.' >&2
     exit 1
 fi
 
@@ -35,7 +36,16 @@ fi
 
 export GPG_TTY
 
-crypted="`cat \"${1}\" | gpg --quiet --symmetric --cipher-algo AES256 | base64`"
+input="`
+while read -r line ; do
+    echo \"${line}\"
+done < \"${1:-/dev/stdin}\"
+`"
+
+crypted="`
+echo \"${input}\" | gpg --quiet --symmetric --cipher-algo AES256 | base64
+`"
+
 content="`cat << END
 #!/bin/sh
 # shellcheck disable=2006
