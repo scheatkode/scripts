@@ -25,26 +25,40 @@ if  ! command -v gpg    > /dev/null 2>&1 || \
     exit 1
 fi
 
-if [ x"$#" != x"1" ] ; then
-    echo "Usage : ${0} <input-file>"
-    exit 1
-fi
-
 if [ x"${GPG_TTY}" = x"" ] ; then
     GPG_TTY="`tty`"
 fi
 
 export GPG_TTY
 
-input="`
-while read -r line ; do
-    echo \"${line}\"
-done < \"${1:-/dev/stdin}\"
-`"
-
-crypted="`
-echo \"${input}\" | gpg --quiet --symmetric --cipher-algo AES256 | base64
-`"
+if [ -t 0 ] ; then
+    if [ x"$#" != x"1" ] ; then
+        echo "Usage : ${0} <input-file>"
+        echo "        cat <input-file> | ${0}"
+        exit 1
+    else
+        crypted="`
+            cat \"${1}\"             \
+            | gpg                    \
+                --quiet              \
+                --symmetric          \
+                --cipher-algo AES256 \
+            | base64
+        `"
+    fi
+else
+    crypted="`
+        while read -r line ; do
+            echo \"${line}\"
+        done < /dev/stdin        \
+        | gpg                    \
+            --quiet              \
+            --symmetric          \
+            --cipher-algo AES256 \
+        | base64
+    `"
+    :
+fi
 
 content="`cat << END
 #!/bin/sh
