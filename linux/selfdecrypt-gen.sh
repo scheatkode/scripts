@@ -15,8 +15,14 @@
 #       - base64
 #
 #   Usage :
-#       selfdecrypt-gen.sh <input-file> > <output-file>
-#       cat <input-file> | selfdecrypt-gen.sh > <output-file>
+#       - selfdecrypt-gen.sh <input-file> > <output-file>
+#       - cat <input-file> | selfdecrypt-gen.sh > <output-file>
+#
+#   Known issues :
+#       - Script must be run in the current context, directly like so :
+#           ./selfdecrypt-gen.sh
+#         And not like this :
+#           sh selfdecrypt-gen.sh
 
 if  ! command -v gpg    > /dev/null 2>&1 || \
     ! command -v base64 > /dev/null 2>&1    \
