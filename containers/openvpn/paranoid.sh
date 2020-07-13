@@ -14,9 +14,10 @@ IMAGENAME='kylemanna/openvpn'
 
 # -- HELPER FUNCTIONS ---------------------------------------------------------
 
-fail () { echo -e "${RED}${2}${NORMAL}"     ; exit ${1} ; }
-warn () { echo -e "${MAGENTA}${1}${NORMAL}" ;             }
-log  () { echo -e "${BLUE}${1}${NORMAL}"    ;             }
+info () { echo -en    "${CYAN}[INFO]${NORMAL} " "${@}" ;          }
+warn () { echo -e   "${YELLOW}[WARN]${NORMAL} " "${@}" ;          }
+fail () { echo -e      "${RED}[FAIL]${NORMAL} " "${@}" ; exit 1 ; }
+ok   () { echo -e  "\r${GREEN}[ OK ]${NORMAL}"         ;          }
 
 # -- DEPENDENCY CHECK ---------------------------------------------------------
 
@@ -45,12 +46,12 @@ if [ "x${volumename}" = 'x' ] ; then
 fi
 
 
-log 'Pulling required container image'
+info 'Pulling required container image'
 
 ${runtime} pull "${IMAGENAME}"
 
 
-log 'Generating configuration'
+info 'Generating configuration'
 
 ${runtime} run --rm -it             \
     -v "${volumename}:/etc/openvpn" \
@@ -62,7 +63,7 @@ ${runtime} run --rm -it             \
     -b -d -D -N -z
 
 
-log 'Generating certificates'
+info 'Generating certificates'
 
 ${runtime} run --rm -it             \
     -e EASYRSA_KEY_SIZE=4096        \
@@ -71,7 +72,7 @@ ${runtime} run --rm -it             \
     "${IMAGENAME}" ovpn_initpki
 
 
-log 'Generating client certificates'
+info 'Generating client certificates'
 
 ${runtime} run --rm -it             \
     -e EASYRSA_KEY_SIZE=4096        \
@@ -80,7 +81,7 @@ ${runtime} run --rm -it             \
     "${IMAGENAME}" easyrsa build-client-full "${clientname}"
 
 
-log 'Retrieving client certificates'
+info 'Retrieving client certificates'
 
 ${runtime} run --rm -it             \
     -e EASYRSA_KEY_SIZE=4096        \
@@ -90,7 +91,7 @@ ${runtime} run --rm -it             \
     "${IMAGENAME}" ovpn_getclient "${clientname}" > "${clientname}.ovpn"
 
 
-log 'Launching server'
+info 'Launching server'
 
 ${runtime} run --rm -d              \
     -p 1194:1194/udp                \
