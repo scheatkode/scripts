@@ -22,43 +22,6 @@ MAGENTA='\e[35m'
    CYAN='\e[36m'
  NORMAL='\e[0m'
 
-# -- HELPER FUNCTIONS ---------------------------------------------------------
-
-info     () { echo -en    "${CYAN}[INFO]${NORMAL} " "${@}" ;          }
-infoline () { echo -e     "${CYAN}[INFO]${NORMAL} " "${@}" ;          }
-warn     () { echo -e   "${YELLOW}[WARN]${NORMAL} " "${@}" ;          }
-fail     () { echo -e    "\r${RED}[FAIL]${NORMAL} " "${@}" ; exit 1 ; }
-success  () { echo -e  "\r${GREEN}[ OK ]${NORMAL}"         ;          }
-
-validate_username () { echo "${@}" | grep -q '^.\{2,\}$' ; }
-validate_password () { echo "${@}" | grep -q '^.\{2,\}$' ; }
-validate_hostname () { echo "${@}" | grep -q '^\(\([a-zA-Z0-9]\|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]\)\.\)*\([A-Za-z0-9]\|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]\)$' ; }
-validate_provider () { validate_hostname "${@}" ; }
-validate_protocol () { echo "${@}" | grep -q '^\(http\|https\)$' ; }
-validate_endpoint () { echo "${@}" | grep -q '^\([a-zA-Z0-9/_-]\{1,\}\)' ; }
-
-connectivity_check () { ping -qc 1 -W 1 "${@}" > /dev/null 2>&1 ; }
-
-# TODO: How in the absolute FUCKING HELL did you manage to work this out ? u.u
-#       Okay, at least make sure it's functioning and there are no bad
-#       surprises.
-
-urlencode () {
-    __ye_olde_lc_collate="${LC_COLLATE:-C}"
-    LC_COLLATE='C'
-
-    for i in $(seq 1 ${#1}) ; do
-        character="$(expr substr "${1}" "${i}" 1)"
-        if echo "${character}" | grep --quiet '[a-zA-Z0-9.~_-]' ; then
-            printf "%s" "${character}"
-        else
-            printf '%%%02X' "'${character}"
-        fi
-    done
-
-    LC_COLLATE="${__ye_olde_lc_collate}"
-}
-
 # -- DDNS PROVIDERS -----------------------------------------------------------
 
 google () {
@@ -136,13 +99,14 @@ while [ "$#" -gt 0 ] ; do
         --password|-p)     password="${2}" ; shift ; shift ;;
         --hostname|-h)     hostname="${2}" ; shift ; shift ;;
         --protocol|-t)     protocol="${2}" ; shift ; shift ;;
-        --provider|-v)     provider="${2}" ; shift ; shift ;;
+        --provider|-P)     provider="${2}" ; shift ; shift ;;
         --endpoint|-e)     endpoint="${2}" ; shift ; shift ;;
+        --verbose|-v)       verbose="true"         ; shift ;;
         --username=*|-u=*) username="${1#*=}" ; shift ;;
         --password=*|-p=*) password="${1#*=}" ; shift ;;
         --hostname=*|-h=*) hostname="${1#*=}" ; shift ;;
         --protocol=*|-t=*) protocol="${1#*=}" ; shift ;;
-        --provider=*|-v=*) provider="${1#*=}" ; shift ;;
+        --provider=*|-P=*) provider="${1#*=}" ; shift ;;
         --endpoint=*|-e=*) endpoint="${1#*=}" ; shift ;;
         *) fail "'${1}' is not a valid argument" ;;
     esac
@@ -160,6 +124,57 @@ do
         || fail "Cannot read ${var} secret file"
     fi
 done
+
+success
+
+# -- HELPER FUNCTIONS ---------------------------------------------------------
+
+if [ x"${verbose}" = x"true" ] ; then
+    info     () { echo -en    "${CYAN}[INFO]${NORMAL} " "${@}" ; }
+    infoline () { echo -e     "${CYAN}[INFO]${NORMAL} " "${@}" ; }
+    warn     () { echo -e   "${YELLOW}[WARN]${NORMAL} " "${@}" ; }
+    success  () { echo -e  "\r${GREEN}[ OK ]${NORMAL}"         ; }
+else
+    info     () { :; }
+    infoline () { :; }
+    warn     () { :; }
+    success  () { :; }
+fi
+
+fail () { echo -e "\r${RED}[FAIL]${NORMAL} " "${@}" ; exit 1 ; }
+
+validate_username () { echo "${@}" | grep -q '^.\{2,\}$' ; }
+validate_password () { echo "${@}" | grep -q '^.\{2,\}$' ; }
+validate_hostname () { echo "${@}" | grep -q '^\(\([a-zA-Z0-9]\|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]\)\.\)*\([A-Za-z0-9]\|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]\)$' ; }
+validate_provider () { validate_hostname "${@}" ; }
+validate_protocol () { echo "${@}" | grep -q '^\(http\|https\)$' ; }
+validate_endpoint () { echo "${@}" | grep -q '^\([a-zA-Z0-9/_-]\{1,\}\)' ; }
+
+connectivity_check () { ping -qc 1 -W 1 "${@}" > /dev/null 2>&1 ; }
+
+# TODO: How in the absolute FUCKING HELL did you manage to work this out ? u.u
+#       Okay, at least make sure it's functioning and there are no bad
+#       surprises.
+
+urlencode () {
+    __ye_olde_lc_collate="${LC_COLLATE:-C}"
+    LC_COLLATE='C'
+
+    for i in $(seq 1 ${#1}) ; do
+        character="$(expr substr "${1}" "${i}" 1)"
+        if echo "${character}" | grep --quiet '[a-zA-Z0-9.~_-]' ; then
+            printf "%s" "${character}"
+        else
+            printf '%%%02X' "'${character}"
+        fi
+    done
+
+    LC_COLLATE="${__ye_olde_lc_collate}"
+}
+
+# -- INPUT VALIDATION ---------------------------------------------------------
+
+info 'Validating input'
 
 if ! validate_username "${username}" ; then fail 'Invalid username       ' ; fi
 if ! validate_password "${password}" ; then fail 'Invalid password       ' ; fi
@@ -234,4 +249,13 @@ case "${provider}" in
 esac
 
 success ; echo "${message}"
+
+# XXX: might turn this into a bash script since it's quickly getting out of
+#      hand.
+#      also the hacks used throughout here are making the whole process really
+#      slow.
+#      to make things handier and more swift, it can be useful to accept
+#      multiple hostnames to update; this is easily done with space separated
+#      strings in posix shell but again, posix shell isn't the most performant
+#      of shells and this script is supposed to run multiple times.
 
