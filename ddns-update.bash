@@ -24,7 +24,9 @@ readonly  NORMAL='\e[0m'
 
 # -- USER INPUT ---------------------------------------------------------------
 
-# TODO: documentation
+# TODO:
+#  - documentation
+#  - better argument parsing
 
 username="${DDNS_USERNAME:-/run/secrets/ddns_username}"
 password="${DDNS_PASSWORD:-/run/secrets/ddns_password}"
@@ -62,19 +64,21 @@ done
 
 # TODO: documentation
 
-if   [ x"${loglevel}" = x'info'  ] ; then
-    success  () { printf "%s[ ok ]%s\n"    "${GREEN}"  "${NORMAL}"      ; }
-    infoline () { printf "%s[info]%s %s\n" "${CYAN}"   "${NORMAL}" "$@" ; }
-    info     () { printf '%s[info]%s %s'   "${CYAN}"   "${NORMAL}" "$@" ; }
-    warn     () { printf "%s[warn]%s %s\n" "${YELLOW}" "${NORMAL}" "$@" ; }
-elif [ x"${loglevel}" = x'warn'  ] ; then
-    success  () { : no-op ; }
-    infoline () { : no-op ; }
-    info     () { : no-op ; }
-    warn     () { printf "%s[warn]%s %s\n" "${YELLOW}" "${NORMAL}" "$@" ; }
-else # fall back to error log level
-    : TODO
-fi
+define_logging_functions () {
+    local loglevel="${1}"
+
+    if [ x"${loglevel}" = x'info' ] ; then
+        good () { printf "%s[ ok ]%s\n"    "${GREEN}"  "${NORMAL}"        ; }
+        info () { printf '%s[info]%s %s'   "${CYAN}"   "${NORMAL}" "${@}" ; }
+        warn () { printf "%s[warn]%s %s\n" "${YELLOW}" "${NORMAL}" "${@}" ; }
+    elif [ x"${loglevel}" = x'warn' ] ; then
+        good () { : noop ; }
+        info () { : noop ; }
+        warn () { printf "%s[warn]%s %s\n" "${YELLOW}" "${NORMAL}" "${@}" ; }
+    else # fall back to error log level
+        : TODO
+    fi
+}
 
 fail () { printf '%s[fail]%s %s' "${RED}" "${NORMAL}" "${@}" ; }
 
@@ -83,17 +87,15 @@ fail () { printf '%s[fail]%s %s' "${RED}" "${NORMAL}" "${@}" ; }
 # TODO: documentation
 # early check for dependencies
 
-info 'Checking dependencies early on'
-
-if   command -v curl > /dev/null 2>&1 ; then
-    cmd='curl'
-elif command -v wget > /dev/null 2>&1 ; then
-    cmd='wget'
-else
-    fail 'This script requires at least curl or wget'
-fi
-
-success
+check_dependency () {
+    if   command -v curl > /dev/null 2>&1 ; then
+        cmd='curl'
+    elif command -v wget > /dev/null 2>&1 ; then
+        cmd='wget'
+    else
+        fail 'This script requires at least curl or wget'
+    fi
+}
 
 # -- HELPER FUNCTIONS --------------------------------------------------------
 
@@ -104,7 +106,7 @@ validate_provider () { "${@}" =~ '^(([:alnum:]|[:alnum:][[:alnum:]-]*[:alnum:])\
 validate_protocol () { "${@}" =~ '^(http|https)$' ; }
 validate_endpoint () { "${@}" =~ '^(\/\w+)+\.\w+(\?(\w+=[\w\d]+(&\w+=[\w\d]+)+)+)*$' ; }
 
-connectivity_check () { ping -qc 1 -W 1 "${@}" > /dev/null 2>&1 ; }
+check_connectivity () { ping -qc 1 -W 1 "${@}" > /dev/null 2>&1 ; }
 
 urlencode () {
     local string="${1}"
@@ -127,36 +129,37 @@ urlencode () {
 }
 
 get_address_provider () {
-    local address_provider=''
+    local provider=''
+
     if   connectivity_check 'ifconfig.me'               ; then
-        address_provider='ifconfig.me/ip'
+        provider='ifconfig.me/ip'
     elif connectivity_check 'ifconfig.co'               ; then
-        address_provider='ifconfig.co/ip'
+        provider='ifconfig.co/ip'
     elif connectivity_check 'ifconfig.io'               ; then
-        address_provider='ifconfig.io/ip'
+        provider='ifconfig.io/ip'
     elif connectivity_check 'wtfismyip.com'             ; then
-        address_provider='wtfismyip.com/text'
+        provider='wtfismyip.com/text'
     elif connectivity_check 'ipecho.net'                ; then
-        address_provider='ipecho.net/plain'
+        provider='ipecho.net/plain'
     elif connectivity_check 'wgetip.com'                ; then
-        address_provider='wgetip.com'
+        provider='wgetip.com'
     elif connectivity_check 'ifcfg.me'                  ; then
-        address_provider='ifcfg.me'
+        provider='ifcfg.me'
     elif connectivity_check 'icanhazip.com'             ; then
-        address_provider='icanhazip.com'
+        provider='icanhazip.com'
     elif connectivity_check 'eth0.me'                   ; then
-        address_provider='eth0.me'
+        provider='eth0.me'
     elif connectivity_check 'bot.whatismyipaddress.com' ; then
-        address_provider='bot.whatismyipaddress.com'
+        provider='bot.whatismyipaddress.com'
     elif connectivity_check 'domains.google.com'        ; then
-        address_provider='domains.google.com/checkip'
+        provider='domains.google.com/checkip'
     elif connectivity_check 'whatismyip.akamai.com'     ; then
-        address_provider='whatismyip.akamai.com'
+        provider='whatismyip.akamai.com'
     else
         fail "Couldn't reach any of the IP providers, check your connectivity"
     fi
 
-    printf '%s' "${address_provider}"
+    printf '%s' "${provider}"
 }
 
 get_address_public () {
@@ -199,7 +202,7 @@ get_address_registered () {
 
 # TODO: documentation
 
-update_google () {
+update_ddns_google () {
     local      cmd="${1}"
     local  address="${2}"
     local username="${3}"
@@ -242,11 +245,11 @@ update_google () {
     esac
 }
 
-update_afraid () {
+update_ddns_afraid () {
     : TODO
 }
 
-update_noip () {
+update_ddns_noip () {
     : TODO
 }
 
