@@ -176,15 +176,15 @@ get_address_public () {
 }
 
 
-#   Let's not make  this overcomplicated with dependency checking,  it can quickly
-#   turn to hell  with weird hacks and  the bells and whistles that  come with it.
-#   `ping` resolves domain names automatically  using whatever's configured on the
-#   system.  We take  advantage  of that  in  the below  function  to resolve  the
-#   hostname.
+#   Let's  not make  this overcomplicated  with dependency  checking, it  can
+#   quickly turn to  hell with obscure hacks and the  bells and whistles that
+#   come with it. `ping` resolves domain names automatically using whatever's
+#   configured on the system. We take advantage of that in the below function
+#   to resolve the hostname.
 #
-#   We also use a double `cut` to  avoid messing with non greedy regexes on `sed`,
-#   `awk` and the  such. We only suggested  those because they come  with the base
-#   system.
+#   We also use  a double `cut` to  avoid messing with non  greedy regexes on
+#   `sed`, `awk` and the such. We only suggested those because they come with
+#   the base system.
 
 get_address_registered () {
     local hostname="${1}"
