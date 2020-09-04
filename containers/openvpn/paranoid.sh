@@ -93,7 +93,7 @@ ${runtime} run --rm -it             \
 
 info 'Launching server'
 
-${runtime} run --rm -d              \
+${runtime} run -d                   \
     -p 1194:1194/udp                \
     -v "${volumename}:/etc/openvpn" \
     --restart=always                \
