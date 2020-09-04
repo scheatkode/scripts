@@ -58,8 +58,8 @@ ${runtime} run --rm -it             \
     --net=none                      \
     "${IMAGENAME}" ovpn_genconfig   \
     -u "udp://${servername}"        \
-    -C 'AES-256-CBC'                \
-    -a 'SHA384'                     \
+    -C 'AES-256-GCM'                \
+    -a 'SHA512'                     \
     -b -d -D -N -z
 
 
