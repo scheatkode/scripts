@@ -63,6 +63,14 @@ ${runtime} run --rm -it             \
     -b -d -D -N -z
 
 
+info "Fixing ${IMAGENAME} latest version bug"
+
+${runtime} run --rm -it                   \
+          -v "${volumename}:/etc/openvpn" \
+          "${IMAGENAME}"                  \
+          touch /etc/openvpn/vars
+
+
 info 'Generating certificates'
 
 ${runtime} run --rm -it             \
