@@ -4,14 +4,14 @@
     <img alt='Powershell Logo' src='res/powershell.png' width='64'>
 </div>
 
-<div align='center'><h1>random-scripts</h1></div>
+<div align='center'><h1>scripts</h1></div>
 <div align='center'>A collection of random, redundantly miscellaneous scripts</div>
 <br>
 <br>
 <img src='res/help.jpg' align='right'>
 
-A collection of one-off scripts,  Containerfiles (seriously, stop calling them
-Dockerfiles) and  whatnot for  random thing-doing  and automation  intended to
+A collection of one-off scripts,  Containerfiles (_seriously, stop calling them
+Dockerfiles_) and  whatnot for  random thing-doing  and automation  intended to
 those lazy and/or brain-saturated. Anything that's not important enough for it
 to have its own repository goes here.
 
