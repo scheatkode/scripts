@@ -2,15 +2,13 @@
 
 set -u
 
-if [ -n "${NO_COLOR+}" ] ; then
+if [ -n "${NO_COLOR+x}" ] ; then
    readonly     RED='\e[31m'
    readonly  NORMAL='\e[0m'
 else
    readonly     RED=''
    readonly  NORMAL=''
 fi
-
-log_error () { printf '%berror:%b %s\n' "${RED}" "${NORMAL}" "${@}" ; }
 
 is_numeric () {
    case "${1#[+-]}" in
@@ -43,7 +41,7 @@ is_prime () {
 
 generate_primes () {
    for n in $(seq "${1}" "${2}") ; do
-      if is_prime $n ; then echo "   ${n}" ; fi
+      if is_prime $n ; then echo "${n}" ; fi
    done
 }
 
@@ -53,7 +51,7 @@ main () {
 
    if [ -n "${1-}" ] ; then
       if ! is_numeric "${1}" ; then
-         log_error "Invalid argument '${1}'"
+         printf '%berror:%b %s\n' "${RED}" "${NORMAL}" "Invalid argument '${1}'"
          exit 1
       fi
 
@@ -61,7 +59,7 @@ main () {
 
       if [ -n "${2-}" ] ; then
          if ! is_numeric "${2}" ; then
-            log_error "Invalid argument '${2}'"
+            printf '%berror:%b %s\n' "${RED}" "${NORMAL}" "Invalid argument '${2}'"
             exit 1
          fi
 
@@ -71,5 +69,7 @@ main () {
 
    generate_primes "${from}" "${to}"
 }
+
+${__SOURCED__:+return}
 
 main "${@}"
