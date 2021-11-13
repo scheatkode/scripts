@@ -1,0 +1,27 @@
+name: Continuous Integration
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  shell:
+    name: Shell scripts tests
+
+    runs-on: ${{ matrix.operating-system }}
+
+    strategy:
+      fail-fast: true
+      matrix:
+        operating-system:
+          - ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: ShellSpec installation
+        run:  curl -fsSL https://git.io/shellspec | sh -s -- --yes
+
+      - name: Test Suite
+        run:  make test
